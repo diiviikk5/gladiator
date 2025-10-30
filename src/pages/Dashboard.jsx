@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
+
 const loadOrbitronFont = () => {
   useEffect(() => {
     const link = document.createElement('link');
@@ -18,13 +19,16 @@ const loadOrbitronFont = () => {
   }, []);
 };
 
+
 export default function Dashboard() {
   loadOrbitronFont();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const videoRef = useRef(null);
 
+
   const [hoveredMode, setHoveredMode] = useState(null);
+
 
   const playerStats = {
     username: user?.username || "PLAYER",
@@ -35,14 +39,17 @@ export default function Dashboard() {
     playtime: "8h 32m"
   };
 
+
   // Ensure video loops continuously and plays properly
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+
     // Set up video properties for better playback
     video.muted = true;
     video.playsInline = true;
+
 
     const playVideo = () => {
       const playPromise = video.play();
@@ -51,14 +58,17 @@ export default function Dashboard() {
       }
     };
 
+
     // Try to play immediately
     playVideo();
+
 
     // Handle ended event for looping
     const handleEnded = () => {
       video.currentTime = 0;
       playVideo();
     };
+
 
     // Force play if paused
     const checkPlayback = setInterval(() => {
@@ -67,8 +77,10 @@ export default function Dashboard() {
       }
     }, 2000);
 
+
     video.addEventListener('ended', handleEnded);
     document.addEventListener('visibilitychange', playVideo);
+
 
     return () => {
       video.removeEventListener('ended', handleEnded);
@@ -77,6 +89,7 @@ export default function Dashboard() {
     };
   }, []);
 
+
   const gameModes = [
     {
       id: 'duel',
@@ -84,8 +97,8 @@ export default function Dashboard() {
       icon: Swords,
       color: 'cyan',
       borderColor: '#06b6d4',
-      description: '1v1 Real-time DSA battles with players worldwide.',
-      features: ['Real-time multiplayer', 'DSA questions', 'ELO ranking'],
+      description: '1v1 Real-time typing battles. Ace typing speed & MCQs to win.',
+      features: ['Real-time multiplayer', 'Speed typing challenges', 'DSA MCQs'],
       buttonText: 'FIND OPPONENT',
       delay: 0.6,
       isNew: true,
@@ -146,6 +159,7 @@ export default function Dashboard() {
     }
   ];
 
+
   return (
     <>
       <Navbar />
@@ -168,6 +182,7 @@ export default function Dashboard() {
             <source src="/dbvid.mp4" type="video/mp4" />
           </video>
 
+
           {/* Gradient Overlays */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
           
@@ -178,6 +193,7 @@ export default function Dashboard() {
             }}
           />
         </div>
+
 
         {/* ==================== CONTENT ==================== */}
         <div className="relative z-10 px-6 py-12 max-w-7xl mx-auto w-full">
@@ -204,6 +220,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
+
               <h1 
                 className="text-6xl md:text-8xl font-black mb-4"
                 style={{ 
@@ -219,10 +236,12 @@ export default function Dashboard() {
                 {playerStats.username}
               </h1>
 
+
               <p className="text-lg md:text-xl text-gray-200">
                 Choose your path to algorithmic mastery
               </p>
             </motion.div>
+
 
             {/* Stats Bar - Better Spacing */}
             <motion.div
@@ -253,6 +272,7 @@ export default function Dashboard() {
             </motion.div>
           </motion.section>
 
+
           {/* Game Modes Section */}
           <section className="mb-20">
             <motion.h2 
@@ -269,6 +289,7 @@ export default function Dashboard() {
                 SELECT GAME MODE
               </span>
             </motion.h2>
+
 
             {/* Game Mode Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 auto-rows-max">
@@ -310,6 +331,7 @@ export default function Dashboard() {
                         }}
                       />
 
+
                       {/* Badges */}
                       {(mode.isNew || mode.isPreview) && (
                         <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black text-white z-20 shadow-lg"
@@ -321,6 +343,7 @@ export default function Dashboard() {
                           {mode.isNew ? 'NEW' : 'PREVIEW'}
                         </div>
                       )}
+
 
                       <div className="relative z-10 flex flex-col h-full">
                         {/* Icon */}
@@ -337,6 +360,7 @@ export default function Dashboard() {
                           <Icon className="w-8 h-8 md:w-10 md:h-10" style={{ color: mode.borderColor, filter: `drop-shadow(0 0 10px ${mode.borderColor})` }} />
                         </motion.div>
 
+
                         {/* Title */}
                         <h3 
                           className="text-3xl md:text-4xl font-black mb-2 md:mb-4"
@@ -349,10 +373,12 @@ export default function Dashboard() {
                           {mode.title}
                         </h3>
 
+
                         {/* Description */}
                         <p className="text-gray-200 mb-4 md:mb-6 text-xs md:text-sm leading-relaxed font-medium flex-grow">
                           {mode.description}
                         </p>
+
 
                         {/* Features */}
                         <div className="space-y-1 md:space-y-2 mb-4 md:mb-6">
@@ -363,6 +389,7 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
+
 
                         {/* Button */}
                         <motion.button
@@ -387,6 +414,7 @@ export default function Dashboard() {
             </div>
           </section>
 
+
           {/* Progress Stats */}
           <section>
             <motion.div
@@ -405,6 +433,7 @@ export default function Dashboard() {
                   YOUR PROGRESS
                 </span>
               </h3>
+
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {[
@@ -445,6 +474,7 @@ export default function Dashboard() {
             </motion.div>
           </section>
         </div>
+
 
         {/* Gradient Animation */}
         <style jsx>{`
