@@ -460,15 +460,14 @@ io.on('connection', (socket) => {
       tournamentId: game.tournamentId,
       round: game.round,
     });
-
-    io.to(player2SocketId).emit('gameEnded', {
-      winner: winner === 'player1' ? 'player2' : winner === 'player2' ? 'player1' : 'tie',
-      player1Stats: player2Stats,
-      player2Stats: player1Stats,
-      gameMode: game.gameMode,
-      tournamentId: game.tournamentId,
-      round: game.round,
-    });
+io.to(player2SocketId).emit('gameEnded', {
+  winner: winner === 'player1' ? 'player2' : winner === 'player2' ? 'player1' : 'tie',
+  player1Stats: player1Stats,  // ✅ Always player1 stats
+  player2Stats: player2Stats,  // ✅ Always player2 stats
+  gameMode: game.gameMode,
+  tournamentId: game.tournamentId,
+  round: game.round,
+});
 
     if (game.gameMode === 'tournament' && game.tournamentId) {
       handleTournamentProgression(gameId, game.tournamentId, winner, player1Stats, player2Stats);
