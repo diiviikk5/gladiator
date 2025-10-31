@@ -8,3 +8,9 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+// Suppress Chrome extension errors
+window.addEventListener('error', (e) => {
+  if (e.message && e.message.includes('Could not establish connection')) {
+    e.preventDefault();
+  }
+});

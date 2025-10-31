@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { 
   Zap, MapPin, Trophy, Clock, Brain, 
-  Target, Play, ChevronRight, Swords
+  Target, Play, ChevronRight, Swords, Flame
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
-
 
 const loadOrbitronFont = () => {
   useEffect(() => {
@@ -19,16 +18,13 @@ const loadOrbitronFont = () => {
   }, []);
 };
 
-
 export default function Dashboard() {
   loadOrbitronFont();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const videoRef = useRef(null);
 
-
   const [hoveredMode, setHoveredMode] = useState(null);
-
 
   const playerStats = {
     username: user?.username || "PLAYER",
@@ -39,17 +35,14 @@ export default function Dashboard() {
     playtime: "8h 32m"
   };
 
-
   // Ensure video loops continuously and plays properly
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-
     // Set up video properties for better playback
     video.muted = true;
     video.playsInline = true;
-
 
     const playVideo = () => {
       const playPromise = video.play();
@@ -58,17 +51,14 @@ export default function Dashboard() {
       }
     };
 
-
     // Try to play immediately
     playVideo();
-
 
     // Handle ended event for looping
     const handleEnded = () => {
       video.currentTime = 0;
       playVideo();
     };
-
 
     // Force play if paused
     const checkPlayback = setInterval(() => {
@@ -77,10 +67,8 @@ export default function Dashboard() {
       }
     }, 2000);
 
-
     video.addEventListener('ended', handleEnded);
     document.addEventListener('visibilitychange', playVideo);
-
 
     return () => {
       video.removeEventListener('ended', handleEnded);
@@ -89,16 +77,29 @@ export default function Dashboard() {
     };
   }, []);
 
-
   const gameModes = [
+    {
+      id: 'lh',
+      title: 'THE FALLING FRENZY',
+      icon: Flame,
+      color: 'rose',
+      borderColor: '#f43f5e',
+      description: '⚡ Questions fall from the sky! Mutations evolve with your combo. Speed meets strategy. Grab power-ups mid-flight for game-changing boosts!',
+      features: ['200+ DSA Questions', 'Real-time Mutations', '4 Unique Power-Ups', 'Infinite Combos', 'Progressive Difficulty'],
+      buttonText: 'PLAY NOW',
+      delay: 0.55,
+      isNew: true,
+      isFeatured: true,
+      path: '/lh'
+    },
     {
       id: 'duel',
       title: 'DUEL',
       icon: Swords,
       color: 'cyan',
       borderColor: '#06b6d4',
-      description: '1v1 Real-time typing battles. Ace typing speed & MCQs to win.',
-      features: ['Real-time multiplayer', 'Speed typing challenges', 'DSA MCQs'],
+      description: '1v1 Real-time typing battles. Ace typing speed & MCQs to win. Challenge friends or face the AI across all ranks.',
+      features: ['Real-time multiplayer', 'Speed typing challenges', 'DSA MCQs', 'Ranked ladder'],
       buttonText: 'FIND OPPONENT',
       delay: 0.6,
       isNew: true,
@@ -106,12 +107,12 @@ export default function Dashboard() {
     },
     {
       id: 'roulette',
-      title: 'ROULETTE',
+      title: 'ROULETTE CLASSIC',
       icon: Target,
       color: 'red',
       borderColor: '#ef4444',
-      description: 'Risk & deduction. Use algorithms to survive.',
-      features: ['Tension-based gameplay', 'Strategic algorithm items', '4 difficulty levels'],
+      description: 'Risk & deduction. Use algorithms strategically to survive. 4 difficulty levels with escalating challenges.',
+      features: ['Tension-based gameplay', 'Strategic algorithm items', '4 difficulty levels', 'Best of 3 format'],
       buttonText: 'PLAY NOW',
       delay: 0.65,
       isNew: false,
@@ -123,8 +124,8 @@ export default function Dashboard() {
       icon: Swords,
       color: 'purple',
       borderColor: '#a855f7',
-      description: 'QTE battles. Perfect timing. Algorithm moves.',
-      features: ['Real-time QTE combat', 'Algorithm-based attacks', '4 challenging AI bosses'],
+      description: 'QTE battles. Perfect timing. Algorithm moves. Fight algorithmic bosses in intense real-time combat.',
+      features: ['Real-time QTE combat', 'Algorithm-based attacks', '4 challenging AI bosses', 'Skill-based progression'],
       buttonText: 'BATTLE NOW',
       delay: 0.7,
       isNew: true,
@@ -136,8 +137,8 @@ export default function Dashboard() {
       icon: Zap,
       color: 'emerald',
       borderColor: '#10b981',
-      description: 'Fast races. Build algorithms visually.',
-      features: ['Drag-and-drop builder', 'Real-time racing', 'Progressive difficulty'],
+      description: 'Fast races. Build algorithms visually with drag-and-drop blocks. Real-time racing against AI opponents.',
+      features: ['Drag-and-drop builder', 'Real-time racing', 'Progressive difficulty', 'Ranked matches'],
       buttonText: 'START NOW',
       delay: 0.75,
       isNew: false,
@@ -149,8 +150,8 @@ export default function Dashboard() {
       icon: MapPin,
       color: 'amber',
       borderColor: '#f59e0b',
-      description: 'Manage. Discover. Survive.',
-      features: ['Procedural generation', 'Algorithm discovery', 'Survival mechanics'],
+      description: 'Manage. Discover. Survive. Build your algorithmic colony with procedurally-generated challenges.',
+      features: ['Procedural generation', 'Algorithm discovery', 'Survival mechanics', 'Resource management'],
       buttonText: 'VIEW CONCEPT',
       delay: 0.8,
       isNew: false,
@@ -158,7 +159,6 @@ export default function Dashboard() {
       isPreview: true
     }
   ];
-
 
   return (
     <>
@@ -182,7 +182,6 @@ export default function Dashboard() {
             <source src="/dbvid.mp4" type="video/mp4" />
           </video>
 
-
           {/* Gradient Overlays */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
           
@@ -193,7 +192,6 @@ export default function Dashboard() {
             }}
           />
         </div>
-
 
         {/* ==================== CONTENT ==================== */}
         <div className="relative z-10 px-6 py-12 max-w-7xl mx-auto w-full">
@@ -220,7 +218,6 @@ export default function Dashboard() {
                 </span>
               </div>
 
-
               <h1 
                 className="text-6xl md:text-8xl font-black mb-4"
                 style={{ 
@@ -236,14 +233,12 @@ export default function Dashboard() {
                 {playerStats.username}
               </h1>
 
-
               <p className="text-lg md:text-xl text-gray-200">
                 Choose your path to algorithmic mastery
               </p>
             </motion.div>
 
-
-            {/* Stats Bar - Better Spacing */}
+            {/* Stats Bar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -272,7 +267,6 @@ export default function Dashboard() {
             </motion.div>
           </motion.section>
 
-
           {/* Game Modes Section */}
           <section className="mb-20">
             <motion.h2 
@@ -290,10 +284,137 @@ export default function Dashboard() {
               </span>
             </motion.h2>
 
+            {/* Featured Mode (The Falling Frenzy) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.55, type: 'spring', stiffness: 300 }}
+              className="mb-12"
+            >
+              {gameModes.filter(m => m.isFeatured).map((mode) => {
+                const Icon = mode.icon;
+                return (
+                  <motion.div
+                    key={mode.id}
+                    whileHover={{ scale: 1.02, y: -8 }}
+                    onClick={() => navigate(mode.path)}
+                    className="relative p-8 md:p-12 rounded-3xl border-3 bg-gradient-to-br from-rose-900/30 via-black/90 to-black/90 backdrop-blur-xl overflow-hidden cursor-pointer group"
+                    style={{
+                      borderColor: mode.borderColor,
+                      boxShadow: `0 30px 100px ${mode.borderColor}99, inset 0 0 80px ${mode.borderColor}15`
+                    }}
+                  >
+                    {/* Animated Glow Background */}
+                    <motion.div
+                      className="absolute inset-0 rounded-3xl opacity-40"
+                      animate={{
+                        opacity: [0.2, 0.5, 0.2]
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      style={{
+                        background: `radial-gradient(circle at 50% 0%, ${mode.borderColor}88, transparent 70%)`
+                      }}
+                    />
 
-            {/* Game Mode Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 auto-rows-max">
-              {gameModes.map((mode) => {
+                    <div className="absolute top-8 right-8 px-4 py-2 rounded-full text-sm font-black text-white z-20 shadow-lg"
+                      style={{ 
+                        background: mode.borderColor,
+                        boxShadow: `0 0 30px ${mode.borderColor}`
+                      }}
+                    >
+                      🔥 FEATURED
+                    </div>
+
+                    <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                      {/* Left - Content */}
+                      <div>
+                        <div className="flex items-center gap-4 mb-6">
+                          <div
+                            className="w-24 h-24 rounded-3xl border-3 flex items-center justify-center backdrop-blur-sm"
+                            style={{
+                              borderColor: mode.borderColor,
+                              background: `${mode.borderColor}4d`,
+                              boxShadow: `0 0 40px ${mode.borderColor}80`
+                            }}
+                          >
+                            <Icon className="w-12 h-12" style={{ color: mode.borderColor, filter: `drop-shadow(0 0 15px ${mode.borderColor})` }} />
+                          </div>
+                          <div>
+                            <h3 
+                              className="text-5xl font-black"
+                              style={{ 
+                                fontFamily: 'Orbitron, sans-serif',
+                                color: mode.borderColor,
+                                textShadow: `0 0 25px ${mode.borderColor}99`
+                              }}
+                            >
+                              {mode.title}
+                            </h3>
+                            <p className="text-rose-300 font-bold">The Newest Challenge</p>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-200 mb-8 text-lg leading-relaxed font-medium">
+                          {mode.description}
+                        </p>
+
+                        <div className="space-y-2 mb-8">
+                          {mode.features.map((feature, i) => (
+                            <div key={i} className="flex items-center gap-3 text-gray-300 font-medium">
+                              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: mode.borderColor, boxShadow: `0 0 12px ${mode.borderColor}` }} />
+                              <span>{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right - Stats Preview */}
+                      <div className="space-y-4">
+                        {[
+                          { label: 'Difficulty', value: 'EXTREME', color: '#f43f5e' },
+                          { label: 'Playtime', value: '2-5 min', color: '#f43f5e' },
+                          { label: 'Replayability', value: 'INFINITE', color: '#f43f5e' },
+                          { label: 'Addiction Level', value: '10/10', color: '#f43f5e' }
+                        ].map((item, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.65 + i * 0.1 }}
+                            className="p-4 rounded-xl border-2 border-white/20 bg-black/50 backdrop-blur-sm"
+                          >
+                            <p className="text-xs text-gray-400 mb-1">{item.label}</p>
+                            <p style={{ color: item.color, fontFamily: 'Orbitron, sans-serif' }} className="text-xl font-black">
+                              {item.value}
+                            </p>
+                          </motion.div>
+                        ))}
+
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate(mode.path)}
+                          className="w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 shadow-lg mt-6"
+                          style={{
+                            background: `linear-gradient(135deg, ${mode.borderColor}, ${mode.borderColor}cc)`,
+                            boxShadow: `0 15px 40px ${mode.borderColor}88`,
+                            fontFamily: 'Orbitron, sans-serif'
+                          }}
+                        >
+                          <Flame className="w-6 h-6" fill="currentColor" />
+                          PLAY NOW
+                          <ChevronRight className="w-6 h-6" />
+                        </motion.button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+
+            {/* Other Game Mode Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-max">
+              {gameModes.filter(m => !m.isFeatured).map((mode) => {
                 const Icon = mode.icon;
                 const isHovered = hoveredMode === mode.id;
                 
@@ -331,7 +452,6 @@ export default function Dashboard() {
                         }}
                       />
 
-
                       {/* Badges */}
                       {(mode.isNew || mode.isPreview) && (
                         <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black text-white z-20 shadow-lg"
@@ -343,7 +463,6 @@ export default function Dashboard() {
                           {mode.isNew ? 'NEW' : 'PREVIEW'}
                         </div>
                       )}
-
 
                       <div className="relative z-10 flex flex-col h-full">
                         {/* Icon */}
@@ -360,7 +479,6 @@ export default function Dashboard() {
                           <Icon className="w-8 h-8 md:w-10 md:h-10" style={{ color: mode.borderColor, filter: `drop-shadow(0 0 10px ${mode.borderColor})` }} />
                         </motion.div>
 
-
                         {/* Title */}
                         <h3 
                           className="text-3xl md:text-4xl font-black mb-2 md:mb-4"
@@ -373,12 +491,10 @@ export default function Dashboard() {
                           {mode.title}
                         </h3>
 
-
                         {/* Description */}
                         <p className="text-gray-200 mb-4 md:mb-6 text-xs md:text-sm leading-relaxed font-medium flex-grow">
                           {mode.description}
                         </p>
-
 
                         {/* Features */}
                         <div className="space-y-1 md:space-y-2 mb-4 md:mb-6">
@@ -389,7 +505,6 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
-
 
                         {/* Button */}
                         <motion.button
@@ -414,7 +529,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-
           {/* Progress Stats */}
           <section>
             <motion.div
@@ -433,7 +547,6 @@ export default function Dashboard() {
                   YOUR PROGRESS
                 </span>
               </h3>
-
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {[
@@ -475,9 +588,8 @@ export default function Dashboard() {
           </section>
         </div>
 
-
         {/* Gradient Animation */}
-        <style jsx>{`
+        <style>{`
           @keyframes gradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }

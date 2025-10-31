@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, XCircle, Trash2 } from 'lucide-react';
+import { Target, XCircle, Trash2, AlertCircle } from 'lucide-react';
 import { BLOCK_TYPES } from '../data/algoBlocks';
 
-export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear }) {
+export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear, challenge = null }) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -21,21 +22,68 @@ export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear }) 
     e.preventDefault();
     setIsDragOver(false);
     const blockId = e.dataTransfer.getData('text/plain');
+    
     if (blockId && onDrop) {
+      // Max blocks validation
+      if (blocks.length >= 10) {
+        setValidationError('⚠️ Maximum 10 blocks allowed!');
+        setTimeout(() => setValidationError(''), 3000);
+        return;
+      }
+
+      // Challenge-specific validation
+      if (challenge && challenge.requiredBlocks) {
+        const blocksUsed = [...blocks, blockId];
+        const hasAllRequired = challenge.requiredBlocks.every(req => blocksUsed.includes(req));
+        
+        if (blocksUsed.length > challenge.requiredBlocks.length + 2) {
+          setValidationError(`💡 Tip: This challenge needs ${challenge.requiredBlocks.join(', ')}`);
+          setTimeout(() => setValidationError(''), 4000);
+        }
+      }
+
       onDrop(blockId);
+      setValidationError('');
     }
+  };
+
+  // Calculate algorithm efficiency
+  const calculateSuggestion = () => {
+    if (!challenge) return '';
+    
+    const hasRequired = challenge.requiredBlocks.every(b => blocks.includes(b));
+    const hasOptimal = challenge.optimalBlocks.every(b => blocks.includes(b));
+    
+    if (!hasRequired) {
+      const missing = challenge.requiredBlocks.filter(b => !blocks.includes(b));
+      return `Missing: ${missing.join(', ')}`;
+    }
+    
+    if (!hasOptimal) {
+      const canAdd = challenge.optimalBlocks.filter(b => !blocks.includes(b));
+      return `Optimize with: ${canAdd.join(', ')}`;
+    }
+    
+    return `✅ Optimal algorithm!`;
   };
 
   return (
     <div className="space-y-3">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 
-          className="text-xl font-bold text-emerald-400" 
-          style={{ fontFamily: 'Orbitron, sans-serif' }}
-        >
-          YOUR ALGORITHM
-        </h3>
+        <div>
+          <h3 
+            className="text-xl font-bold text-emerald-400" 
+            style={{ fontFamily: 'Orbitron, sans-serif' }}
+          >
+            YOUR ALGORITHM
+          </h3>
+          {challenge && (
+            <p className="text-xs text-gray-500 mt-1">
+              {challenge.type.toUpperCase()} • {challenge.difficulty.toUpperCase()}
+            </p>
+          )}
+        </div>
         <button
           onClick={onClear}
           disabled={blocks.length === 0}
@@ -77,9 +125,14 @@ export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear }) 
               <Target className="w-16 h-16 mb-4 opacity-40" />
             </motion.div>
             <p className="text-lg font-bold mb-1">Drop Blocks Here</p>
-            <p className="text-xs text-gray-600">
-              Drag algorithm blocks from the left to build your solution
+            <p className="text-xs text-gray-600 mb-3">
+              Drag algorithm blocks from left to solve this {challenge?.type || 'algorithm'} challenge
             </p>
+            {challenge && (
+              <p className="text-xs text-emerald-400/70 font-mono">
+                Required: {challenge.requiredBlocks.join(' → ')}
+              </p>
+            )}
           </motion.div>
         ) : (
           <div className="space-y-2">
@@ -130,19 +183,19 @@ export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear }) 
                       {index + 1}
                     </div>
                     
-                    {/* Block Icon */}
-                    <div className="text-2xl relative z-10">{block.icon}</div>
-                    
-                    {/* Block Info */}
-                    <div className="flex-1 min-w-0 relative z-10">
-                      <div 
-                        className="font-bold text-sm" 
-                        style={{ color: block.color, fontFamily: 'Orbitron, sans-serif' }}
-                      >
-                        {block.name}
-                      </div>
-                      <div className="text-[10px] text-gray-500">
-                        {block.description}
+                    {/* Block Icon & Info */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0 relative z-10">
+                      <div className="text-2xl flex-shrink-0">{block.icon}</div>
+                      <div className="min-w-0">
+                        <div 
+                          className="font-bold text-sm" 
+                          style={{ color: block.color, fontFamily: 'Orbitron, sans-serif' }}
+                        >
+                          {block.name}
+                        </div>
+                        <div className="text-[10px] text-gray-400">
+                          {block.complexity} • {block.teaches}
+                        </div>
                       </div>
                     </div>
                     
@@ -163,14 +216,57 @@ export default function AlgorithmBuilder({ blocks, onDrop, onRemove, onClear }) 
         )}
       </div>
 
-      {/* Block Count */}
+      {/* Validation Messages */}
+      <AnimatePresence>
+        {validationError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-2 rounded-lg bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 text-xs flex items-center gap-2"
+          >
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {validationError}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Algorithm Suggestion */}
+      {challenge && blocks.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`p-3 rounded-lg border-2 text-xs font-mono ${
+            calculateSuggestion().includes('✅')
+              ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
+              : 'border-yellow-500/50 bg-yellow-500/10 text-yellow-300'
+          }`}
+        >
+          💡 {calculateSuggestion()}
+        </motion.div>
+      )}
+
+      {/* Block Count & Stats */}
       {blocks.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center text-sm text-gray-500"
+          className="grid grid-cols-3 gap-2 text-xs"
         >
-          {blocks.length} block{blocks.length !== 1 ? 's' : ''} added
+          <div className="p-2 rounded-lg bg-blue-900/30 border border-blue-600/50 text-center">
+            <p className="text-blue-300 font-bold">{blocks.length}/10</p>
+            <p className="text-gray-500">Blocks</p>
+          </div>
+          <div className="p-2 rounded-lg bg-purple-900/30 border border-purple-600/50 text-center">
+            <p className="text-purple-300 font-bold">
+              {blocks.reduce((sum, bid) => sum + (BLOCK_TYPES[bid]?.executionTime || 0), 0)}ms
+            </p>
+            <p className="text-gray-500">Exec Time</p>
+          </div>
+          <div className="p-2 rounded-lg bg-cyan-900/30 border border-cyan-600/50 text-center">
+            <p className="text-cyan-300 font-bold">{challenge ? calculateSuggestion().includes('✅') ? '✅' : '⚠️' : '—'}</p>
+            <p className="text-gray-500">Status</p>
+          </div>
         </motion.div>
       )}
     </div>
