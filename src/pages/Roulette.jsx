@@ -1,12 +1,136 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   Target, Home, Activity, Info, Sparkles, 
   TrendingUp, Clock, Shield, Brain, Zap
 } from 'lucide-react';
-import { useRouletteGame } from '../game/rouletteHooks';
+
 import { ROUND_TYPES, ITEMS, AI_LEVELS, TOOLTIPS } from '../game/rouletteData';
+// ==================== MCQ POPUP MODAL ====================
+const MCQModal = ({ 
+  mcqVisible, 
+  currentMCQ, 
+  mcqResult, 
+  selectedAnswer, 
+  onAnswer, 
+  onConfirm 
+}) => {
+  return (
+    <AnimatePresence>
+      {mcqVisible && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ scale: 0.8, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.8, y: 50 }}
+            className="w-full max-w-2xl mx-4 p-8 rounded-3xl border-3 border-cyan-500 bg-gradient-to-br from-slate-800 via-purple-900 to-slate-800 shadow-2xl"
+          >
+            {/* Header */}
+            <div className="mb-8">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="inline-block text-5xl mb-4"
+              >
+                🧠
+              </motion.div>
+              <h2 style={{ fontFamily: 'Orbitron, sans-serif' }} className="text-3xl font-black text-cyan-400 mb-2">
+                ALGORITHM CHALLENGE
+              </h2>
+              <p className="text-lg text-gray-400">
+                Answer correctly to shoot! Wrong = AI turn
+              </p>
+            </div>
+
+            {/* Concept Badge */}
+            <div className="mb-6 inline-block">
+              <span className={`px-4 py-2 rounded-full text-sm font-bold uppercase border ${ currentMCQ?.difficulty === 'EASY' ? 'bg-green-500/30 text-green-300 border-green-500/50' : currentMCQ?.difficulty === 'MEDIUM' ? 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50' : 'bg-red-500/30 text-red-300 border-red-500/50'}`}>
+                {currentMCQ?.concept} • {currentMCQ?.difficulty}
+              </span>
+            </div>
+
+            {/* Question */}
+            {!mcqResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-6 rounded-2xl bg-black/50 border-2 border-cyan-500/30"
+              >
+                <p className="text-xl font-bold text-white mb-6 leading-relaxed">
+                  {currentMCQ?.question}
+                </p>
+
+                {/* Options */}
+                <div className="space-y-3">
+                  {currentMCQ?.options.map((option, idx) => (
+                    <motion.button
+                      key={idx}
+                      whileHover={{ scale: 1.02, x: 10 }}
+                      onClick={() => onAnswer(idx)}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-4 font-semibold ${ selectedAnswer === idx ? 'border-cyan-500 bg-cyan-500/30' : 'border-gray-700 bg-gray-900/50 hover:border-cyan-500/50 hover:bg-gray-900'}`}
+                    >
+                      <div className="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold">
+                        {String.fromCharCode(65 + idx)}
+                      </div>
+                      <span className="text-white">{option}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Result */}
+            {mcqResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`mb-8 p-6 rounded-2xl border-2 ${ mcqResult.correct ? 'bg-green-500/20 border-green-500 text-green-300' : 'bg-red-500/20 border-red-500 text-red-300'}`}
+              >
+                <p className="text-2xl font-black mb-4">
+                  {mcqResult.correct ? '✅ CORRECT!' : '❌ WRONG!'}
+                </p>
+                <p className="text-lg font-bold mb-3">
+                  {mcqResult.explanation}
+                </p>
+                <p className="text-sm">
+                  <span className="text-gray-300">📚 Concept:</span> {currentMCQ?.concept}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Action Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onConfirm}
+              disabled={!mcqResult}
+              className={`w-full py-4 rounded-xl font-black text-lg transition-all ${ mcqResult?.correct ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-black hover:shadow-lg hover:shadow-green-500/50' : mcqResult ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/50'}`}
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+            >
+              {!mcqResult ? 'Select an answer' : mcqResult.correct ? '🎯 SHOOT NOW!' : 'AI Turn (Cannot shoot)'}
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ==================== UPDATED SHOOT FUNCTION ====================
+// Replace the shoot function calls in your button handlers with this
+const handleShootWithMCQ = useCallback((target) => {
+  // Show MCQ modal when player clicks shoot
+  if (turn === 'player' && gamePhase === 'playing') {
+    // Create a temp state to track MCQ flow
+    setShowMCQFlow({ target, active: true });
+  }
+}, [turn, gamePhase]);
 
 // Load Orbitron font
 const loadOrbitronFont = () => {
@@ -34,6 +158,7 @@ export default function Roulette() {
     playerItems,
     aiItems,
     turn,
+    setTurn,    
     knownInfo,
     revealedNext,
     gameLog,
